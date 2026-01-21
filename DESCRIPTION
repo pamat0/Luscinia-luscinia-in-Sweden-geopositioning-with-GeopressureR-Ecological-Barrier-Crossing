@@ -1,0 +1,33 @@
+Package: YourProjectName
+Title: These are the Goals of my Study (One Line, Title Case)
+Version: 0.0.0.9000
+Authors@R: 
+    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"),
+           comment = c(ORCID = "0000-xxxx-xxxx-xxxx"))
+Description: More detailed description of my research objective and data (one paragraph).
+License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
+    license
+Depends: 
+    R (>= 3.5.0)
+Imports: 
+    config,
+    ecmwfr,
+    GeoLocatoR,
+    GeoPressureR,
+    ggplot2,
+    here,
+    knitr,
+    plotly
+Suggests:
+    frictionless,
+    job,
+    keyring,
+    zen4R
+Remotes: 
+    rafnuss/GeoPressureR,
+    rafnuss/GeoLocatoR
+VignetteBuilder: 
+    knitr
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2

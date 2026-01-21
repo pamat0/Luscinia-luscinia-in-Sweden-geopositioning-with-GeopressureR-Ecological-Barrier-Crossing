@@ -1,0 +1,149 @@
+---
+title: Tag label
+editor: source
+description: https://raphaelnussbaumer.com/GeoPressureManual/geopressuretemplate-label.html
+---
+
+This script will guide you through the tag labeling of pressure and/or acceleration data and creation of the pressure map.
+
+::: callout-tip
+*Delete this block when you have read!*
+
+-   These scripts should be adapted based on your project, but the same script should run for all your tags. You can always check [the original version online](https://github.com/Rafnuss/GeoPressureTemplate/blob/main/analysis/1-label.qmd).
+-   Make sure you've read the [GeoPressureManual](https://raphaelnussbaumer.com/GeoPressureManual), in particular the [labeling instructions](https://raphaelnussbaumer.com/GeoPressureManual/labelling-tracks.html), before running this script
+-   Nothing is saved at the end of the script and it is meant to be like that. The goal of this script is to (1) create the tag labels (`./data/tag-label/`) and (2) adapt `config.yml`.
+:::
+
+```{r setup, message=FALSE}
+# Choose the id
+id <- "18LX"
+
+# Set the directory to the project root
+# see Working directory bullet point in https://bookdown.org/yihui/rmarkdown/notebook.html#executing-code
+knitr::opts_knit$set(root.dir = here::here())
+# Alternatively, you can change the global RStudio settings in menu "Tools/Global Options...", on the "R Markdown" panel, choose "Project" for "Evaluate chunks in directory:"
+
+library(GeoPressureR)
+library(ggplot2)
+library(plotly)
+```
+
+## Edit `config.yml`
+
+::: callout-tip
+*Delete this block when you have read!*
+
+Edit the default config according to your study: Use `default` for all parameters which are the same for *all* your tracks and add any parameter that is tag specific.
+
+`config.yml` is structured in the following level as defined by the indentation and `:`
+
+``` yaml
+tag_id:
+  function_name:
+    arguments: value
+```
+
+Note that the values are written in JSON format (and not `R`), so for a vector/array you need to use `[, ]` and for an array of objects (named lists), you need to use `-` and indentation. Here is an example:
+
+``` yaml
+18LX:
+  tag_set_map:
+    extent: [-16, 23, 0, 50]
+    known: 
+      - stap_id: 1
+        known_lon: 7.05
+        known_lat: 48.9
+  bird:
+    species_name: "Acrocephalus arundinaceus" # only if you have different species, otherwise add to default
+```
+:::
+
+Check that the config is correct.
+
+```{r}
+str(config::get(config = id))
+```
+
+## Sensor data and crop date
+
+Check if the crop dates (in red) are correct.
+
+```{r crop_date}
+ggplotly(
+  tag_create(id, quiet = TRUE) |>
+    plot(type = "pressure", plot_plotly = FALSE) +
+    geom_vline(
+      xintercept = as.numeric(c(
+        as.POSIXct(config::get("tag_create", id)$crop_start),
+        as.POSIXct(config::get("tag_create", id)$crop_end)
+      )),
+      color = "red",
+      lwd = 1
+    )
+)
+```
+
+You might want to change `type` to check the values of the other sensors (e.g., `acceleration` or `light`).
+
+Create tag with cropped date
+
+```{r tag_create}
+tag <- tag_create(
+  id,
+  crop_start = config::get("tag_create", id)$crop_start,
+  crop_end = config::get("tag_create", id)$crop_end
+)
+```
+
+## Create label and edit on Trainset
+
+```{r}
+tag_label_write(tag)
+```
+
+Open `csv` and edit on <https://trainset.raphaelnussbaumer.com/>.
+
+## Run [initial labeling checks](https://raphaelnussbaumer.com/GeoPressureManual/labelling-tracks.html#initial-checks)
+
+**Check 1**
+
+```{r}
+tag <- tag_label(tag)
+```
+
+::: callout-tip
+*Delete this block when you have read!*
+
+Edit and export label on Trainset and simply run the same chunk until you're happy with it! This principle (edit your label file and re-run the same chunk) is valid throughout this script.
+:::
+
+**Check 2**
+
+```{r}
+plot(tag, type = "pressure")
+```
+
+## Run [GeoPressureViz checks](https://raphaelnussbaumer.com/GeoPressureManual/labelling-tracks.html#geopressureviz-check)
+
+Improve the label file until you can draw a coherent trajectory on GeoPressureViz.
+
+```{r}
+tag <- tag_create(
+  id,
+  crop_start = config::get("tag_create", id)$crop_start,
+  crop_end = config::get("tag_create", id)$crop_end,
+  quiet = TRUE
+) |>
+  tag_label(quiet = TRUE) |>
+  tag_set_map(
+    extent = config::get("tag_set_map", id)$extent,
+    scale = 1, # Use a coarse scale at first 1° is usually enough
+    known = config::get("tag_set_map", id)$known
+  )
+
+tag <- geopressure_map(tag, quiet = TRUE)
+```
+
+```{r, eval = FALSE}
+geopressureviz(tag, path = tag2path(tag, interp = 1))
+```
