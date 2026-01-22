@@ -86,4 +86,4 @@ GeoPressureTemplate
 ```
 </details>
 
-This repository was generated based on GeoPressureTemplate (v1.3). https://github.com/Rafnuss/GeoPressureTemplate
+This repository was generated based on [GeoPressureTemplate (v1.3)](https://github.com/Rafnuss/GeoPressureTemplate).
