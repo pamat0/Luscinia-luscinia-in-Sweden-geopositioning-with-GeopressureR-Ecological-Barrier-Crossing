@@ -4,7 +4,7 @@ Migration position estimates from ambient pressure data recorded with multisenso
 
 LOGGER TYPE: CAnMove multi-sensor loggers (Lund University)
 
-Raw data is provided for the loggers' accelerometer and pressure sensors.
+Raw data is provided for the loggers' accelerometer and pressure sensors. Pressure is recorded once per hour. Acceleration is recorded every 10 minutes, with hourly saved total sum. 
 
 Labelled data indicating migratory flights and stopovers is also provided.
 
