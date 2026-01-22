@@ -1,0 +1,11 @@
+
+Migratory flights, considered in GopressureR and migration variables such as flight duration, must have at least 1.5h  in duration as well as a drop in pressure. We excluded the following short (<1.5h) flights from each individual:
+
+90E – 1 
+91A – 1
+91D -  3
+92 A – 2
+AC2 – 2
+AC4 – 1 
+ACA – 2
+ACB - 3

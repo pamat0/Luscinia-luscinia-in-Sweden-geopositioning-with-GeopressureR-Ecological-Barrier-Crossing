@@ -1,33 +1,30 @@
-Package: YourProjectName
-Title: These are the Goals of my Study (One Line, Title Case)
-Version: 0.0.0.9000
+Package: GeoPressureTemplate
+Title: Luscinia Luscinia pressure positioning
+URL: https://github.com/Rafnuss/GeoPressureTemplate
+Description: More detailed description of my research objective with my dataset available (one paragraph).
 Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"),
-           comment = c(ORCID = "0000-xxxx-xxxx-xxxx"))
-Description: More detailed description of my research objective and data (one paragraph).
-License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
-    license
+    person("Pablo", "Macías-Torres", , "pablo.macias_torres@biol.lu.se", role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0002-4503-164X"))
+License: GPL (>= 3)
+Version: 1.0.0.1
 Depends: 
     R (>= 3.5.0)
 Imports: 
-    config,
-    ecmwfr,
-    GeoLocatoR,
     GeoPressureR,
     ggplot2,
-    here,
+    config,
     knitr,
-    plotly
-Suggests:
-    frictionless,
-    job,
-    keyring,
-    zen4R
+    leaflet,
+    leaflet.extras,
+    leaflet.providers,
+    plotly,
+    rmarkdown,
+    distill
+    yaml,
 Remotes: 
-    rafnuss/GeoPressureR,
-    rafnuss/GeoLocatoR
+    rafnuss/GeoPressureR
 VignetteBuilder: 
     knitr
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.2
+RoxygenNote: 7.2.1

@@ -1,85 +1,196 @@
 # Configuration file for GeoPressureR parameters
 #
 # This file stores all the parameters used by the GeoPressureR functions, following the best
-# practice to separate parameters from codes. These parameters are retrieved using config::get() of
-# the config R package <https://rstudio.github.io/config/>.
+# practice to separate parameters from codes. This file is used with the config R package
+# <https://rstudio.github.io/config/> which allows to retrieve the value of each parameter
+# in your analysis files.
 #
-# This file is meant to be adapted based on your needs: feel free to add parameters either in the
-# default (applied to all tags) or for each tag separately (overwrite default). It is recommended to
-# specify all parameters used, even if you use the default value.
-#
-# You can check the documentation of each function to learn what each of these parameters are doing
-# as well as reading https://raphaelnussbaumer.com/GeoPressureManual/geopressuretemplate-workflow.html
+# This file is meant to be adapted based on your needs: feel free to add or remove parameters either
+# in the default or for each tag. It is recommended to specify all parameters used, even if you
+# use the default value.
 
 default:
-  tag_create: # ?tag_create()
-    # crop_start: NULL # Generally set at the tag level
-    # crop_end: NULL
-  tag_label: # ? tag_label()
-    warning_flight_duration: 2 # hours
-    warning_stap_duration: 6 # hours
-  tag_set_map: # ?tag_set_map()
-    extent: [-16, 23, 0, 50] # [W, E, S, N]
-    scale: 5 # 1 (min) -> 1° ; 2 -> 0.5° ; 5 -> 0.2° ; 10 (max) -> 0.1°
-    include_stap_id: NULL # default, take all
+  #-- SET MAP
+  tag_set_map:
+    extent: [5, 60, -27, 57] # c(W, E, S, N)
+    scale: 2 # 1 (min) -> 1° ; 2 -> 0.5° ; 5 -> 0.25° ; 10 (max) -> 0.1°
     include_min_duration: 0 # in hours
-  geopressure_map: # ?geopressure_map()
-    max_sample: 250
-    margin: 20 # in m
-    sd: 1
-    thr_mask: 0.9
+
+  #-- GEOPRESSURE.
+  geopressure_map:
+    max_sample: 600 #max sample for long stationary periods, not very important, just reduces some computation time
+    margin: 10 # in hPa margin in altitude for daily movements of the bird
+    sd: 0.8 #key parameter, sd of ERA5 values in the normal distribution
+    thr_mask: 0.9 #% of points that have to fall inside the range altitude to be considered
+    # log_linear_pooling_weight:
     log_linear_pooling_weight: !expr \(n) log(n)/n
-  twilight_create: # ?twilight_create()
-    # twl_thr: NULL
-    # twl_offset: NULL # in hours
-  geolight_map: # ?geolight_map()
-    twl_calib_adjust: 1.4
-    twl_llp: !expr \(n) log(n)/n
-  graph_create: # ?graph_create()
-    thr_likelihood: 0.99
+
+  #-- GRAPH
+  graph_create:
+    thr_likelihood: 0.9 #the higher the more sqares taken into account
     thr_gs: 150 # km/h
-    # likelihood: NULL # Best to leave NULL.
-  graph_add_wind:
-    thr_as: 90 # km/h
+
+  bird_create:
+    scientific_name: "Luscinia luscinia"
+
+  #-- MOVEMENT MODEL
   graph_set_movement: # ?graph_set_movement()
-    type: "gs" # modify manually to "as" when you have downloaded wind data
-    # method: "gamma"
-    # shape: 7 # only for gamma
-    # scale: 7
-    # location: 40 # only for logistic
-    # low_speed_fix: 15 # km/h
-    # zero_speed_ratio: 1
+    shape: 6
+    scale: 7
+    method: "gamma"  #"power" to use the Pmech approach
+    low_speed_fix: 20 # km/h
+    zero_speed_ratio: 1.5
+
+  graph_add_wind:
+    thr_as: 90
+
   graph_simulation: # ?graph_simulation()
     nj: 10
   pressurepath_create: # ?pressurepath_create()
-    variable: ["altitude", "surface_pressure"]
+    #era5_dataset: #"land"
+    variable: ["altitude", "surface_pressure", "temperature_2m", "dewpoint_temperature_2m"]
     # solar_dep: 0
   geopressuretemplate: # ?geopressuretemplate()
-    likelihood: ["map_pressure", "map_light"]
+    likelihood: ["map_pressure"] #  , "map_light"
     outputs: ["marginal", "most_likely", "simulation"]
-    pressurepath: ["most_likely"] # "geopressureviz"
+    pressurepath: ["most_likely"] #"geopressureviz"
 
-18LX:
+91D:
   tag_create:
-    crop_start: "2017-06-20"
-    crop_end: "2018-05-02"
+    crop_start: "2022-06-15"
+    crop_end: "2023-05-20"
   tag_set_map:
     known:
-      stap_id: [1, -1] # -1 -> last stap
-      known_lon: 17.05
-      known_lat: 48.9
-  bird_create:
-    scientific_name: "Acrocephalus arundinaceus"
-  graph_set_movement:
-    type: "as" # Needs wind to work, use "gs" otherwise
+      stap_id: [1,-1]
+      known_lon: 13.44
+      known_lat: 55.7
 
-CB619:
+  #-- GEOLIGHT
+  # twl_offset:
+  #-- MOVEMENT MODEL
+
+90E:
+  id: "90E"
+  tag_create:
+    crop_start: "2022-06-15"
+    crop_end: "2023-05-17"
   tag_set_map:
-    extent: [-100, -68, 0, 40] # Usually best define in default if same for all tags
+    known:
+      stap_id: [1,-1]
+      known_lon: 13.43
+      known_lat: 55.7
+
+92A:
+  id: "92A"
+  tag_create:
+    crop_start: "2022-06-15"
+    crop_end: "2023-06-02"
+  tag_set_map:
+    known:
+      stap_id: [1,-1]
+      known_lon: 13.43
+      known_lat: 55.7
+
+
+91A:
+  id: "91A"
+  tag_create:
+    crop_start: "2022-06-15"
+    crop_end: "2023-03-12"
+  tag_set_map:
+    known:
+      stap_id: [1]
+      known_lon: 13.43
+      known_lat: 55.7
+
+
+AC4:
+  id: "AC4"
+  tag_create:
+    crop_start: "2023-06-15"
+    crop_end: "2024-05-07"
+  geopressure_map:
+    sd: 0.9
+  tag_set_map:
     known:
       stap_id: [1, -1]
-      known_lon: -82.304972
-      known_lat: 37.286812
-  graph_set_movement:
-    movement:
-      type: "gs"
+      known_lon: 13.43
+      known_lat: 55.7
+
+AC2:
+  id: "AC2"
+  tag_create:
+    crop_start: "2023-06-15"
+    crop_end: "2024-03-18"
+  tag_set_map:
+    known:
+      stap_id: [1]
+      known_lon: 13.43
+      known_lat: 55.7
+
+ACA:
+  id: "ACA"
+  tag_create:
+    crop_start: "2023-06-15"
+    crop_end: "2024-04-09"
+  tag_set_map:
+    known:
+      stap_id: [1]
+      known_lon: 13.43
+      known_lat: 55.7
+
+ACB:
+  id: "ACB"
+  tag_create:
+    crop_start: "2023-06-15"
+    crop_end: "2024-03-23"   #lastday the tag worked: "2024-04-03"
+  tag_set_map:
+    known:
+      stap_id: [1]
+      known_lon: 13.43
+      known_lat: 55.7
+
+DBA:
+  id: "DBA"
+  tag_create:
+    crop_start: "2024-06-15"
+    crop_end: "2025-06-07"
+  tag_set_map:
+    known:
+      stap_id: [1,-1]
+      known_lon: 13.43
+      known_lat: 55.7
+
+AC0:
+  id: "AC0"
+  tag_create:
+    crop_start: "2023-06-15"
+    crop_end: "2024-03-09" #lastday the tag worked: "2024-03-09"
+  geopressure_map:
+    sd: 0.9
+    max_sample: 1000
+  tag_set_map:
+    extent: [7, 46, -23, 57] # c(W, E, S, N)
+    scale: 2 # 1 (min) -> 1° ; 2 -> 0.5° ; 5 -> 0.25° ; 10 (max) -> 0.1°
+    known:
+      stap_id: [1]
+      known_lon: 13.43
+      known_lat: 55.7
+  # graph_set_movement: # ?graph_set_movement()
+  #   shape: 7
+  geopressuretemplate: # ?geopressuretemplate()
+    likelihood: ["map_pressure"] #,"map_light"  Light helped to correctly identify stopover 14 in middle Sudan
+
+DB6:
+  id: "DB6"
+  tag_create:
+    crop_start: "2024-06-15"
+    crop_end: "2024-12-21" #lastday the tag worked: "2024-03-09"
+  tag_set_map:
+    known:
+      stap_id: [1]
+      known_lon: 13.43
+      known_lat: 55.7
+
+
+
