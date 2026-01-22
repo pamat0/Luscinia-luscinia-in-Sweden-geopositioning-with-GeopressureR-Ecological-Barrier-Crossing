@@ -1,44 +1,58 @@
 ---
-title: Twilight label
-editor: source
-description: https://raphaelnussbaumer.com/GeoPressureManual/geopressuretemplate-twilight.html
+title: Twilight Label
+format: html
+editor: visual
 ---
+
+This script walk you through the labeling of twilight and creation of the light map.
 
 ::: callout-tip
 *Delete this block when you have read!*
 
 **If you don't have light data, delete this file!**
 
--   These scripts should be adapted based on your project, but the same script should run for all your tags. You can always check [the original version online](https://github.com/Rafnuss/GeoPressureTemplate/blob/main/analysis/1-label.qmd).
--   Make sure you've read the [GeoPressureManual](https://raphaelnussbaumer.com/GeoPressureManual), in particular the [twilight labeling instructions](https://raphaelnussbaumer.com/GeoPressureManual/light-map.html#manual-labelling-of-twilight), before running this script
--   Nothing is saved at the end of the script and it is meant to be like that. Only twilight label file and config.yml should be edited. Use `geopressure.R` for the final run.
+-   The script is meant to be adapted according to your needs, so feel free to delete or modify: you can still check [the original version online]().
+-   At the same time, keep this file general to all your tags.
+-   It is assume that you have followed the GeoPressureManual entirely. Make sure you have done that!
+-   In particular, the instruction on how to understand the output of this script and what do are provided in [the labeling instruction of the GeoPressureManual]().
+-   The script is not meant to be run with "Run all". Use the "play" button of each chunk to run the script line-by-line.
+-   Nothing is saved at the end of the script and it is meant to be like that. Only label file and config.yml should be edited. Use `geopressure.R` for the final run.
 :::
 
-```{r setup}
-id <- "18LX"
+```{r, setup}
+# Choose the id 
+id <- "91D"
 
-knitr::opts_knit$set(root.dir = here::here())
+# Set the directory to the project root
+# Set the directory to the project root
+knitr::opts_knit$set(root.dir = "C:/Users/pa5772ma/OneDrive - Lund University/Lund PhD/R tools/GeoPressureTemplate-3/Luscinialuscinia")
 library(GeoPressureR)
 library(ggplot2)
+library(glue)
 ```
 
 ## Create tag
 
-Make sure you have already created the label file with the "1-label.qmd" script.
+Start from an existing `tag`
 
 ```{r}
-tag <- tag_create(
-  id,
-  crop_start = config::get("tag_create", id)$crop_start,
-  crop_end = config::get("tag_create", id)$crop_end,
-  quiet = TRUE
+load(glue("./data/interim/{id}.RData"))
+```
+
+or generate from a new ones
+
+```{r, eval=F}
+tag <- tag_create(config::get("id", id),
+  crop_start = config::get("crop_start", id),
+  crop_end = config::get("crop_end", id)
 ) |>
-  tag_label(quiet = TRUE) |>
+  tag_label() |>
   tag_set_map(
-    extent = config::get("tag_set_map", id)$extent,
-    scale = config::get("tag_set_map", id)$scale,
-    known = config::get("tag_set_map", id)$known
+    extent = config::get("extent", id),
+    scale = config::get("scale", id),
+    known = config::get("known", id)
   )
+
 ```
 
 ## Create Twilight
@@ -48,8 +62,11 @@ Generate the twilight automatically. Check that `twl_offset` allows for night/da
 ```{r}
 tag <- twilight_create(
   tag,
-  twl_offset = config::get("twilight_create", id)$twl_offset
+  twl_thr = NULL, 
+  twl_offset = -2
+    #config::get("twl_offset", id)
 )
+
 plot(tag, type = "twilight")
 ```
 
@@ -57,9 +74,8 @@ plot(tag, type = "twilight")
 
 ```{r}
 twilight_label_write(tag)
+)
 ```
-
-Open `csv` on <https://trainset.raphaelnussbaumer.com/>.
 
 Read and check the twilight annotation
 
@@ -70,8 +86,8 @@ plot(tag, type = "twilight")
 
 ## Compute likelihood map
 
-```{r, cache = TRUE}
-tag <- geolight_map(tag)
+```{r}
+tag <- geolight_map(tag, twl_calib_adjust =2)
 ```
 
 `twl_calib_adjust` and `twl_llp` can generally be left to default, but add to `config.yml` if needed.
@@ -83,24 +99,18 @@ tag <- geolight_map(tag)
 ```{r}
 barW <- median(diff(tag$param$geolight_map$twl_calib$x)) / 2
 plot(tag$param$geolight_map$twl_calib, xlim = c(85, 100))
-rect(
-  xleft = tag$param$geolight_map$twl_calib$x - barW,
-  ybottom = 0,
-  xright = tag$param$geolight_map$twl_calib$x + barW,
-  ytop = tag$param$geolight_map$twl_calib$y,
-  col = gray(0.5)
-)
-lines(tag$param$geolight_map$twl_calib, col = "red")
+rect(xleft = tag$param$geolight_map$twl_calib$x - barW, ybottom = 0, xright = tag$param$geolight_map$twl_calib$x + barW, ytop = tag$param$geolight_map$twl_calib$y, col = gray(0.5))
 ```
 
 ### Check light map
 
 ```{r}
 plot(tag, type = "map_light")
+plot(tag, type = "map")
 ```
 
 ### Check with pressure and trajectory
 
-```{r, eval = FALSE}
+```{r, eval=F}
 geopressureviz(tag)
 ```
