@@ -87,3 +87,6 @@ GeoPressureTemplate
 </details>
 
 This repository was generated based on [GeoPressureTemplate (v1.3)](https://github.com/Rafnuss/GeoPressureTemplate).
+
+<img width="962" height="723" alt="image" src="https://github.com/user-attachments/assets/c15ca810-8ffd-4b88-8506-a5b816007239" />
+
