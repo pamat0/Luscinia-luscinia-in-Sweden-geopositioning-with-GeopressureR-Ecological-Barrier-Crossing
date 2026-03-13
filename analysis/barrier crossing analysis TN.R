@@ -120,8 +120,7 @@ daily_summary <- merged_df %>%
     daytime_act_score = sum(
       `Act score`[(is_active != TRUE) & date >= sunrise_fallback & date <= sunset_fallback], na.rm = TRUE
     ),
-    daytime_act_score_no_flight = sum(
-      Act_score_no_flight[(is_active != TRUE) & date >= sunrise_fallback & date <= sunset_fallback]),
+    daytime_act_score_no_flight = sum(Act_score_no_flight[(is_active != TRUE) & date >= sunrise_fallback & date <= sunset_fallback]),
     daytime_activity_percentage = daytime_act_score_no_flight / (daytime_rows * 30) * 100,  
     lat = mean(lat[(is_active != TRUE)], na.rm = TRUE),
     lon = mean(lon[(is_active != TRUE)], na.rm = TRUE),
@@ -129,6 +128,8 @@ daily_summary <- merged_df %>%
     .groups = "drop"
   ) %>%
   rename(date = day)
+
+
 
 
 # library(dplyr)
@@ -272,6 +273,9 @@ daily_summary <- daily_summary %>%
   )
 
 
+
+
+
 #### adding periods to merged_df hourly df
 merged_df$date_day <- as.Date(merged_df$date)
 
@@ -323,11 +327,15 @@ all_flight_periods2 %>%
 
 
 
+
+
 ###### #plot locomotion % in period 4 ######
 # Base output directory
 base_dir <- "C:/Users/pa5772ma/OneDrive - Lund University/Lund PhD/Research/Fieldwork/Nightingales/Analysis/Thrush nightingale acelerometer flights/output"
 
 all_ids <- unique(merged_df$ID)
+
+#all_ids <- "ACA"
 
 for (bird in all_ids) {
   
@@ -440,9 +448,14 @@ for (bird in all_ids) {
   # ---- Save plot ----
   file_path <- file.path(out_dir, paste0(bird, "_period4_activity.pdf"))
   ggsave(file_path, p, width = 10, height = 5, dpi = 300)
+  file_path <- file.path(out_dir, paste0(bird, "_period4_activity.png"))
+  ggsave(file_path, p, width = 10, height = 5, dpi = 300)
   
   message("Saved: ", file_path)
 }
+
+
+
 
 
 #Now for Arabian crossing in spring
@@ -655,6 +668,110 @@ emm_barrier_spring <- emmeans(
 
 emm_barrier_spring
 pairs(emm_barrier_spring)
+
+
+
+#diurnal activity statistics per season
+# --- PERIODS: span in days (date range) ---
+period_stats_ID <- daily_summary %>%
+  filter(!is.na(lat)) %>% 
+  group_by(ID, period_activity) %>%
+  summarise(
+    # optional: how many days actually observed (if you care about gaps)
+    n_days_observed = n_distinct(date),
+    mean_daytime_activity_id = mean(daytime_activity_percentage, na.rm = TRUE),
+    n_days_1activityorless = sum(daytime_activity_percentage <= 2 , na.rm = TRUE),
+    n_days_0activity  = sum(daytime_activity_percentage == 0, na.rm = TRUE),
+    n_days_inside_barrier = n_distinct(date[lat >= 18 & lat <= 37]),
+    n_days_0activity_over_barrier = sum(daytime_activity_percentage == 0 & lat >= 18 & lat <= 37, na.rm = TRUE), # change to number for Arabian Peninusla 30 - 12; 37-18 MEditerranean barrier
+    n_days_1activity_over_barrier = sum(daytime_activity_percentage <= 2 & lat >= 18 & lat <= 37, na.rm = TRUE),
+    n_days_1activity_outside_barrier = n_days_1activityorless-n_days_1activity_over_barrier
+  ) 
+period_stats_ID
+
+# Spring Arabian peninsula barrier numbers:
+period_stats_ID <- daily_summary %>%
+  filter(!is.na(lat)) %>% 
+  group_by(ID, period_activity) %>%
+  summarise(
+    # optional: how many days actually observed (if you care about gaps)
+    n_days_observed = n_distinct(date),
+    mean_daytime_activity_id = mean(daytime_activity_percentage, na.rm = TRUE),
+    n_days_1activityorless = sum(daytime_activity_percentage <= 2 , na.rm = TRUE),
+    n_days_0activity  = sum(daytime_activity_percentage == 0, na.rm = TRUE),
+    n_days_inside_barrier= n_distinct(date[lat >= 12 & lat <= 30]),
+    n_days_0activity_over_barrier = sum(daytime_activity_percentage == 0 & lat >= 12 & lat <= 30, na.rm = TRUE), # change to number for Arabian Peninusla 30 - 12; 37-18 MEditerranean barrier
+    n_days_1activity_over_barrier = sum(daytime_activity_percentage <=2 & lat >= 12 & lat <= 30, na.rm = TRUE),
+    n_days_1activity_outside_barrier = n_days_1activityorless-n_days_1activity_over_barrier
+  ) 
+period_stats_ID
+
+period_stats <- period_stats_ID %>% 
+  group_by(period_activity) %>%
+  filter(period_activity == 12) %>%  #4 forMEditerranean and Sahara; 12 for Arabian Peninsula
+  summarise(
+    n_IDs = n_distinct(ID),
+    
+    # --- Daytime activity ---
+    mean_daytime_activity = mean(mean_daytime_activity_id, na.rm = TRUE),
+    sd_daytime_activity   = sd(mean_daytime_activity_id, na.rm = TRUE),
+    
+    # --- Observation effort ---
+    mean_n_days_observed  = mean(n_days_observed, na.rm = TRUE),
+    sd_n_days_observed    = sd(n_days_observed, na.rm = TRUE),
+    
+    # --- Low activity (≤1%) (all latitudes) ---
+    mean_days_low_activity = mean(n_days_1activityorless, na.rm = TRUE),
+    sd_days_low_activity   = sd(n_days_1activityorless, na.rm = TRUE),
+    proportion_days_low_act =
+      mean_days_low_activity / mean_n_days_observed,
+    
+    # --- Zero activity (all latitudes) ---
+    mean_days_0activity = mean(n_days_0activity, na.rm = TRUE),
+    sd_days_0activity   = sd(n_days_0activity, na.rm = TRUE),
+    
+    # --- Days inside barrier ---
+    median_days_inside_barrier =
+      median(n_days_inside_barrier, na.rm = TRUE),
+    mean_days_inside_barrier =
+      mean(n_days_inside_barrier, na.rm = TRUE),
+    sd_days_inside_barrier =
+      sd(n_days_inside_barrier, na.rm = TRUE),
+    
+    # --- Zero activity over barrier ---
+    mean_days_0activity_barrier =
+      mean(n_days_0activity_over_barrier, na.rm = TRUE),
+    sd_days_0activity_barrier =
+      sd(n_days_0activity_over_barrier, na.rm = TRUE),
+    
+    # --- Low activity (≤1%) over barrier ---
+    mean_days_low_activity_barrier =
+      mean(n_days_1activity_over_barrier, na.rm = TRUE),
+    sd_days_low_activity_barrier =
+      sd(n_days_1activity_over_barrier, na.rm = TRUE),
+    
+    mean_n_days_1activity_outside_barrier=
+      mean(n_days_1activity_outside_barrier, na.rm = TRUE),
+    sd_n_days_1activity_outside_barrier=
+      sd(n_days_1activity_outside_barrier, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+period_stats
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 ##### Daytime activity per latitude #####
