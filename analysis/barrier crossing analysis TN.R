@@ -403,7 +403,7 @@ for (bird in all_ids) {
   
   if (length(lat_rect_df) == 0) next
   
-  # ---- Create folder ----
+  # ---- Create folder 
   out_dir <- file.path(base_dir, bird)
   if (!dir.exists(out_dir)) dir.create(out_dir, recursive = TRUE)
   
@@ -521,11 +521,11 @@ for (bird in all_ids) {
   
   if (length(lat_rect_df) == 0) next
   
-  # ---- Create folder ----
+  # ---- Create folder 
   out_dir <- file.path(base_dir, bird)
   if (!dir.exists(out_dir)) dir.create(out_dir, recursive = TRUE)
   
-  # ---- Plot ----
+  # ---- Plot 
   p <- ggplot(plot_df, aes(x = date, y = activity_percentage)) +
     # Night shading (if available)
     geom_rect(
@@ -615,10 +615,6 @@ emm_barrier <- emmeans(model_barrier_mixed, ~ barrier)
 emm_barrier
 
 
-
-
-
-
 #SPRING
 
 plot_df_spring <- daily_summary %>%
@@ -671,7 +667,7 @@ pairs(emm_barrier_spring)
 
 
 
-#diurnal activity statistics per season
+#diurnal activity statistics per season OVer Mediterranean and Sahara
 # --- PERIODS: span in days (date range) ---
 period_stats_ID <- daily_summary %>%
   filter(!is.na(lat)) %>% 
@@ -680,35 +676,18 @@ period_stats_ID <- daily_summary %>%
     # optional: how many days actually observed (if you care about gaps)
     n_days_observed = n_distinct(date),
     mean_daytime_activity_id = mean(daytime_activity_percentage, na.rm = TRUE),
-    n_days_1activityorless = sum(daytime_activity_percentage <= 2 , na.rm = TRUE),
+    n_days_2activityorless = sum(daytime_activity_percentage <= 2 , na.rm = TRUE),
     n_days_0activity  = sum(daytime_activity_percentage == 0, na.rm = TRUE),
     n_days_inside_barrier = n_distinct(date[lat >= 18 & lat <= 37]),
     n_days_0activity_over_barrier = sum(daytime_activity_percentage == 0 & lat >= 18 & lat <= 37, na.rm = TRUE), # change to number for Arabian Peninusla 30 - 12; 37-18 MEditerranean barrier
-    n_days_1activity_over_barrier = sum(daytime_activity_percentage <= 2 & lat >= 18 & lat <= 37, na.rm = TRUE),
-    n_days_1activity_outside_barrier = n_days_1activityorless-n_days_1activity_over_barrier
-  ) 
-period_stats_ID
-
-# Spring Arabian peninsula barrier numbers:
-period_stats_ID <- daily_summary %>%
-  filter(!is.na(lat)) %>% 
-  group_by(ID, period_activity) %>%
-  summarise(
-    # optional: how many days actually observed (if you care about gaps)
-    n_days_observed = n_distinct(date),
-    mean_daytime_activity_id = mean(daytime_activity_percentage, na.rm = TRUE),
-    n_days_1activityorless = sum(daytime_activity_percentage <= 2 , na.rm = TRUE),
-    n_days_0activity  = sum(daytime_activity_percentage == 0, na.rm = TRUE),
-    n_days_inside_barrier= n_distinct(date[lat >= 12 & lat <= 30]),
-    n_days_0activity_over_barrier = sum(daytime_activity_percentage == 0 & lat >= 12 & lat <= 30, na.rm = TRUE), # change to number for Arabian Peninusla 30 - 12; 37-18 MEditerranean barrier
-    n_days_1activity_over_barrier = sum(daytime_activity_percentage <=2 & lat >= 12 & lat <= 30, na.rm = TRUE),
-    n_days_1activity_outside_barrier = n_days_1activityorless-n_days_1activity_over_barrier
+    n_days_2activity_over_barrier = sum(daytime_activity_percentage <= 2 & lat >= 18 & lat <= 37, na.rm = TRUE),
+    n_days_2activity_outside_barrier = n_days_2activityorless-n_days_2activity_over_barrier
   ) 
 period_stats_ID
 
 period_stats <- period_stats_ID %>% 
   group_by(period_activity) %>%
-  filter(period_activity == 12) %>%  #4 forMEditerranean and Sahara; 12 for Arabian Peninsula
+  filter(period_activity == 4) %>%  #4 forMEditerranean and Sahara; 12 for Arabian Peninsula
   summarise(
     n_IDs = n_distinct(ID),
     
@@ -721,8 +700,8 @@ period_stats <- period_stats_ID %>%
     sd_n_days_observed    = sd(n_days_observed, na.rm = TRUE),
     
     # --- Low activity (≤1%) (all latitudes) ---
-    mean_days_low_activity = mean(n_days_1activityorless, na.rm = TRUE),
-    sd_days_low_activity   = sd(n_days_1activityorless, na.rm = TRUE),
+    mean_days_low_activity = mean(n_days_2activityorless, na.rm = TRUE),
+    sd_days_low_activity   = sd(n_days_2activityorless, na.rm = TRUE),
     proportion_days_low_act =
       mean_days_low_activity / mean_n_days_observed,
     
@@ -746,14 +725,14 @@ period_stats <- period_stats_ID %>%
     
     # --- Low activity (≤1%) over barrier ---
     mean_days_low_activity_barrier =
-      mean(n_days_1activity_over_barrier, na.rm = TRUE),
+      mean(n_days_2activity_over_barrier, na.rm = TRUE),
     sd_days_low_activity_barrier =
-      sd(n_days_1activity_over_barrier, na.rm = TRUE),
+      sd(n_days_2activity_over_barrier, na.rm = TRUE),
     
-    mean_n_days_1activity_outside_barrier=
-      mean(n_days_1activity_outside_barrier, na.rm = TRUE),
-    sd_n_days_1activity_outside_barrier=
-      sd(n_days_1activity_outside_barrier, na.rm = TRUE),
+    mean_n_days_2activity_outside_barrier=
+      mean(n_days_2activity_outside_barrier, na.rm = TRUE),
+    sd_n_days_2activity_outside_barrier=
+      sd(n_days_2activity_outside_barrier, na.rm = TRUE),
     .groups = "drop"
   )
 
@@ -762,7 +741,75 @@ period_stats
 
 
 
+# Spring Arabian peninsula barrier numbers:
+period_stats_ID <- daily_summary %>%
+  filter(!is.na(lat)) %>% 
+  group_by(ID, period_activity) %>%
+  summarise(
+    # optional: how many days actually observed (if you care about gaps)
+    n_days_observed = n_distinct(date),
+    mean_daytime_activity_id = mean(daytime_activity_percentage, na.rm = TRUE),
+    n_days_2activityorless = sum(daytime_activity_percentage <= 2 , na.rm = TRUE),
+    n_days_0activity  = sum(daytime_activity_percentage == 0, na.rm = TRUE),
+    n_days_inside_barrier= n_distinct(date[lat >= 12 & lat <= 30]),
+    n_days_0activity_over_barrier = sum(daytime_activity_percentage == 0 & lat >= 12 & lat <= 30, na.rm = TRUE), # change to number for Arabian Peninusla 30 - 12; 37-18 MEditerranean barrier
+    n_days_2activity_over_barrier = sum(daytime_activity_percentage <=2 & lat >= 12 & lat <= 30, na.rm = TRUE),
+    n_days_2activity_outside_barrier = n_days_2activityorless-n_days_2activity_over_barrier
+  ) 
+period_stats_ID
 
+period_stats <- period_stats_ID %>% 
+  group_by(period_activity) %>%
+  filter(period_activity == 12) %>%  #4 forMEditerranean and Sahara; 12 for Arabian Peninsula
+  summarise(
+    n_IDs = n_distinct(ID),
+    
+    # --- Daytime activity ---
+    mean_daytime_activity = mean(mean_daytime_activity_id, na.rm = TRUE),
+    sd_daytime_activity   = sd(mean_daytime_activity_id, na.rm = TRUE),
+    
+    # --- Observation effort ---
+    mean_n_days_observed  = mean(n_days_observed, na.rm = TRUE),
+    sd_n_days_observed    = sd(n_days_observed, na.rm = TRUE),
+    
+    # --- Low activity (≤1%) (all latitudes) ---
+    mean_days_low_activity = mean(n_days_2activityorless, na.rm = TRUE),
+    sd_days_low_activity   = sd(n_days_2activityorless, na.rm = TRUE),
+    proportion_days_low_act =
+      mean_days_low_activity / mean_n_days_observed,
+    
+    # --- Zero activity (all latitudes) ---
+    mean_days_0activity = mean(n_days_0activity, na.rm = TRUE),
+    sd_days_0activity   = sd(n_days_0activity, na.rm = TRUE),
+    
+    # --- Days inside barrier ---
+    median_days_inside_barrier =
+      median(n_days_inside_barrier, na.rm = TRUE),
+    mean_days_inside_barrier =
+      mean(n_days_inside_barrier, na.rm = TRUE),
+    sd_days_inside_barrier =
+      sd(n_days_inside_barrier, na.rm = TRUE),
+    
+    # --- Zero activity over barrier ---
+    mean_days_0activity_barrier =
+      mean(n_days_0activity_over_barrier, na.rm = TRUE),
+    sd_days_0activity_barrier =
+      sd(n_days_0activity_over_barrier, na.rm = TRUE),
+    
+    # --- Low activity (≤1%) over barrier ---
+    mean_days_low_activity_barrier =
+      mean(n_days_2activity_over_barrier, na.rm = TRUE),
+    sd_days_low_activity_barrier =
+      sd(n_days_2activity_over_barrier, na.rm = TRUE),
+    
+    mean_n_days_2activity_outside_barrier=
+      mean(n_days_2activity_outside_barrier, na.rm = TRUE),
+    sd_n_days_2activity_outside_barrier=
+      sd(n_days_2activity_outside_barrier, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+period_stats
 
 
 
